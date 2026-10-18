@@ -924,7 +924,7 @@ kbd {
    Phones (portrait) and small landscape screens
    Everything stacks, the page scrolls, and text stays big.
    ============================================================ */
-@media (max-width: 760px), (max-height: 500px) {
+@media (max-width: 1000px), (max-height: 500px) {
   html, body { overflow-x: hidden; overflow-y: auto; height: auto; }
   .screen { height: auto; min-height: 100vh; min-height: 100dvh; padding: 42px 14px 22px; }
   .bg-rays { position: fixed; }

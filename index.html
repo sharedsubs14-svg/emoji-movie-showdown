@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Movie Showdown</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Yatra+One&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Background layers: sunburst, sparkles, marigold garland -->
+  <div class="bg-rays" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+  <div class="sparkles" id="sparkles" aria-hidden="true"></div>
+  <div class="toran" aria-hidden="true"></div>
+  <canvas id="confetti" aria-hidden="true"></canvas>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ===================== SETUP SCREEN ===================== -->
+  <section class="screen active" id="screen-setup">
+    <header class="hero">
+      <div class="hero-badge">✨ Presenting ✨</div>
+      <h1 class="logo"><span class="logo-emoji">🎬</span> Emoji Movie <span class="logo-pop">Showdown</span></h1>
+      <p class="tagline" id="tagline">Bollywood ka sabse filmy emoji game!</p>
+    </header>
+
+    <div class="setup-grid">
+      <div class="panel" id="cast-panel">
+        <h2 class="panel-title">🌟 Starring <span class="count" id="player-count">0/15</span></h2>
+        <form class="add-row" id="add-player-form" autocomplete="off">
+          <input id="player-input" type="text" maxlength="18" placeholder="Type a player name…">
+          <button type="submit" class="btn btn-pink" id="add-player-btn">+ Add</button>
+        </form>
+        <ul class="chips" id="player-list"></ul>
+      </div>
+
+      <div class="panel" id="settings-panel">
+        <h2 class="panel-title">🎛️ Game Settings</h2>
+        <div class="seg seg-mode" data-setting="mode" role="group" aria-label="Choose edition">
+          <button type="button" data-value="bollywood">🇮🇳 Bollywood</button>
+          <button type="button" data-value="hollywood">🎞️ Hollywood Classics</button>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Rounds</span>
+          <div class="seg" data-setting="rounds">
+            <button type="button" data-value="10">10</button>
+            <button type="button" data-value="20">20</button>
+            <button type="button" data-value="30">30</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Timer</span>
+          <div class="seg" data-setting="timer">
+            <button type="button" data-value="20">20s</button>
+            <button type="button" data-value="30">30s</button>
+            <button type="button" data-value="45">45s</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Difficulty</span>
+          <div class="seg" data-setting="difficulty">
+            <button type="button" data-value="easy">Easy</button>
+            <button type="button" data-value="mixed">Mixed</button>
+            <button type="button" data-value="hard">Hard</button>
+          </div>
+        </div>
+        <div class="setting">
+          <span class="setting-label">Sound</span>
+          <button type="button" class="toggle" id="sound-toggle" aria-pressed="true"><span class="knob"></span><span class="toggle-text">ON</span></button>
+        </div>
+        <div class="setting-links">
+          <button type="button" class="btn btn-teal btn-sm" id="open-custom">✍️ Add your own puzzle <span id="custom-count"></span></button>
+          <button type="button" class="link-btn" id="reset-used">♻️ Reset used puzzles <span id="fresh-count"></span></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="start-wrap">
+      <button type="button" class="btn btn-gold btn-xl" id="start-btn">🎥 Lights, Camera, Start Game!</button>
+      <p class="start-hint" id="start-hint">Add at least 2 players to begin</p>
+    </div>
+  </section>
+
+  <!-- ===================== GAME SCREEN ===================== -->
+  <section class="screen" id="screen-game">
+    <header class="topbar">
+      <div class="round-pill" id="round-label">Round 1 of 20</div>
+      <div class="mini-logo">🎬 Emoji Movie <span>Showdown</span></div>
+      <button type="button" class="link-btn" id="end-game-btn">🏁 End game</button>
+    </header>
+
+    <div class="game-grid">
+      <main class="stage panel" id="stage">
+        <div class="stage-top">
+          <button type="button" class="timer" id="timer" title="Click to pause (P)">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="timer-track" cx="60" cy="60" r="52"></circle>
+              <circle class="timer-ring" id="timer-ring" cx="60" cy="60" r="52"></circle>
+            </svg>
+            <span class="timer-num" id="timer-num">30</span>
+          </button>
+          <div class="stage-heading" id="stage-heading">Guess the movie!</div>
+          <div class="worth" id="worth"><span class="worth-stars" id="worth-stars">⭐⭐⭐</span><span class="worth-text" id="worth-text">3 pts</span></div>
+        </div>
+
+        <div class="emoji-wrap" id="emoji-wrap">
+          <div class="emoji-row" id="emoji"></div>
+        </div>
+
+        <div class="answer" id="answer" hidden>
+          <div class="answer-kicker" id="answer-kicker">Kya baat hai!</div>
+          <div class="answer-title" id="answer-title"></div>
+          <div class="answer-meta" id="answer-meta"></div>
+        </div>
+
+        <div class="hints" id="hints">
+          <div class="hint-card locked" id="hint1">
+            <div class="hint-tag">Hint 1</div>
+            <div class="hint-body" id="hint1-body"></div>
+          </div>
+          <div class="hint-card locked" id="hint2">
+            <div class="hint-tag">Hint 2</div>
+            <div class="hint-body" id="hint2-body"></div>
+          </div>
+        </div>
+
+        <div class="controls">
+          <button type="button" class="btn btn-teal" id="hint-btn">💡 Hint <small>(−1 ⭐)</small></button>
+          <button type="button" class="btn btn-gold" id="reveal-btn">🎉 Reveal Answer</button>
+          <button type="button" class="btn btn-ghost" id="skip-btn">⏭️ Skip</button>
+          <button type="button" class="btn btn-pink" id="next-btn">Next ➡️</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="undo-btn">↩️ Undo last point</button>
+        </div>
+      </main>
+
+      <aside class="scoreboard panel">
+        <h2 class="panel-title sb-title">🏆 Scoreboard</h2>
+        <p class="sb-sub">Click the winner's name</p>
+        <div class="players" id="scoreboard"></div>
+      </aside>
+    </div>
+
+    <div class="legend" aria-label="Keyboard shortcuts">
+      <span><kbd>Space</kbd> reveal</span>
+      <span><kbd>→</kbd> next</span>
+      <span><kbd>H</kbd> hint</span>
+      <span><kbd>S</kbd> skip</span>
+      <span><kbd>U</kbd> undo</span>
+      <span><kbd>P</kbd> pause</span>
+    </div>
+  </section>
+
+  <!-- ===================== FINAL SCREEN ===================== -->
+  <section class="screen" id="screen-final">
+    <header class="final-head">
+      <div class="hero-badge">🎞️ The End… ya phir? 🎞️</div>
+      <h1 class="logo final-logo" id="final-title">And the Filmfare goes to…</h1>
+    </header>
+    <div class="podium" id="podium"></div>
+    <ol class="ranks" id="ranks"></ol>
+    <div class="final-actions">
+      <button type="button" class="btn btn-gold btn-lg" id="play-again-btn">🔁 Play Again <small id="play-again-sub">(picture abhi baaki hai!)</small></button>
+      <button type="button" class="btn btn-ghost btn-lg" id="new-game-btn">🆕 New Game</button>
+    </div>
+  </section>
+
+  <!-- ===================== CUSTOM PUZZLES DIALOG ===================== -->
+  <dialog class="modal" id="custom-dialog">
+    <div class="modal-inner">
+      <button type="button" class="modal-x" id="close-custom" aria-label="Close">×</button>
+      <h2 class="panel-title">✍️ Your Own Puzzles</h2>
+      <p class="modal-sub">Inside jokes welcome! These get mixed into every game.</p>
+      <form class="custom-form" id="custom-form" autocomplete="off">
+        <label>Emojis <input id="c-emoji" type="text" maxlength="40" placeholder="e.g. 🍕🛵😴🏠" required></label>
+        <label>Answer <input id="c-answer" type="text" maxlength="60" placeholder="e.g. Rohan's Goa Trip" required></label>
+        <label>Hint <span class="opt">(optional)</span> <input id="c-hint" type="text" maxlength="90" placeholder="e.g. Happened last December"></label>
+        <button type="submit" class="btn btn-pink">💾 Save puzzle</button>
+      </form>
+      <ul class="custom-list" id="custom-list"></ul>
+    </div>
+  </dialog>
+
+  <script src="puzzles.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
